@@ -1,7 +1,7 @@
 const state = {
   categories: [],
   quantities: {},
-  orderId: createOrderId(),
+  orderId: "---",
 };
 
 const menuRoot = document.getElementById("menu-root");
@@ -10,11 +10,44 @@ const submitOrderIdLabel = document.getElementById("submit-order-id");
 const selectedCountLabel = document.getElementById("selected-count");
 const statusMessage = document.getElementById("status-message");
 const submitButton = document.getElementById("submit-order");
-
-function createOrderId() {
-  const randomPart = Math.floor(Math.random() * 900 + 100);
-  return `SPH-${Date.now().toString().slice(-6)}-${randomPart}`;
-}
+const menuImageMap = {
+  "golden-hour-macchiato": {
+    src: "/menu/golden-hour-macchiato.jpg",
+    alt: "Golden Hour Macchiato servido en vaso con espuma cremosa y tonos dorados.",
+  },
+  "glitter-iced-latte": {
+    src: "/menu/glitter-iced-latte.png",
+    alt: "Glitter Iced Latte frio servido en vaso alto con capas de cafe y leche.",
+  },
+  "pink-clay-mocha": {
+    src: "/menu/pink-clay-mocha.jpg",
+    alt: "Pink Clay Mocha servido en taza de cristal con nata y topping rosado.",
+  },
+  "cloud-matcha-latte": {
+    src: "/menu/cloud-matcha-latte.jpeg",
+    alt: "Cloud Matcha Latte servido en vaso con capas de matcha y leche.",
+  },
+  "strawberry-glow-matcha": {
+    src: "/menu/strawberry-glow-matcha.jpg",
+    alt: "Strawberry Glow Matcha con espuma rosa sobre matcha verde servido con hielo.",
+  },
+  "watermelon-spritz": {
+    src: "/menu/watermelon-spritz.jpg",
+    alt: "Watermelon Spritz rojo servido en vaso corto con decoracion de sandia y lima.",
+  },
+  "dragon-fruit-serum": {
+    src: "/menu/dragon-fruit-serum.webp",
+    alt: "Dragon Fruit Serum rosa intenso servido con fruta dragon y limon.",
+  },
+  "sephora-spritz": {
+    src: "/menu/sephora-spritz.webp",
+    alt: "Sephora Spritz rosado servido en vaso elegante con espuma y citricos.",
+  },
+  "black-diamond-martini": {
+    src: "/menu/black-diamond-martini.webp",
+    alt: "Black Diamond Martini oscuro servido en copa con brocheta de moras.",
+  },
+};
 
 function setOrderId(orderId) {
   state.orderId = orderId;
@@ -44,6 +77,62 @@ function changeQuantity(itemId, nextQuantity) {
   updateSelectedCount();
 }
 
+function createPlaceholder(item, category) {
+  const placeholder = document.createElement("div");
+  placeholder.className = "menu-item-placeholder";
+
+  const label = document.createElement("span");
+  label.className = "menu-item-placeholder-label";
+  label.textContent = category;
+
+  const initials = document.createElement("strong");
+  initials.className = "menu-item-placeholder-initials";
+  initials.textContent = item.name
+    .split(" ")
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
+
+  const name = document.createElement("p");
+  name.className = "menu-item-placeholder-name";
+  name.textContent = item.name;
+
+  placeholder.append(label, initials, name);
+  return placeholder;
+}
+
+function createMenuMedia(item, category) {
+  const media = document.createElement("div");
+  media.className = "menu-item-media";
+
+  const imageMeta = menuImageMap[item.id];
+  if (!imageMeta) {
+    media.classList.add("is-placeholder");
+    media.appendChild(createPlaceholder(item, category));
+    return media;
+  }
+
+  const image = document.createElement("img");
+  image.className = "menu-item-image";
+  image.src = imageMeta.src;
+  image.alt = imageMeta.alt;
+  image.loading = "lazy";
+  image.decoding = "async";
+  image.addEventListener("error", () => {
+    if (media.classList.contains("is-placeholder")) {
+      return;
+    }
+
+    media.classList.add("is-placeholder");
+    media.innerHTML = "";
+    media.appendChild(createPlaceholder(item, category));
+  });
+
+  media.appendChild(image);
+  return media;
+}
+
 function renderMenu() {
   menuRoot.innerHTML = "";
 
@@ -60,6 +149,10 @@ function renderMenu() {
 
       const article = document.createElement("article");
       article.className = "menu-item";
+      article.appendChild(createMenuMedia(item, category.category));
+
+      const content = document.createElement("div");
+      content.className = "menu-item-content";
 
       const details = document.createElement("div");
       details.className = "item-copy";
@@ -103,7 +196,8 @@ function renderMenu() {
       });
 
       controls.append(decreaseButton, quantityInput, increaseButton);
-      article.append(details, controls);
+      content.append(details, controls);
+      article.appendChild(content);
       section.appendChild(article);
     });
 
@@ -136,6 +230,16 @@ async function loadMenu() {
   updateSelectedCount();
 }
 
+async function loadNextOrderId() {
+  const response = await fetch("/api/next-order-id", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("No se pudo generar el siguiente numero de pedido.");
+  }
+
+  const payload = await response.json();
+  setOrderId(payload.orderId);
+}
+
 async function submitOrder() {
   const items = buildSelectedItems();
   if (items.length === 0) {
@@ -153,7 +257,6 @@ async function submitOrder() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        orderId: state.orderId,
         items,
       }),
     });
@@ -171,7 +274,7 @@ async function submitOrder() {
 
     renderMenu();
     updateSelectedCount();
-    setOrderId(createOrderId());
+    await loadNextOrderId();
   } catch (error) {
     setStatus(error.message, "warning");
   } finally {
@@ -181,7 +284,6 @@ async function submitOrder() {
 
 submitButton.addEventListener("click", submitOrder);
 
-setOrderId(state.orderId);
-loadMenu().catch((error) => {
+Promise.all([loadMenu(), loadNextOrderId()]).catch((error) => {
   setStatus(error.message, "warning");
 });

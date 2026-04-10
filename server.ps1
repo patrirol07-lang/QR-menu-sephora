@@ -150,6 +150,23 @@ function Save-Orders {
         Set-Content -LiteralPath $OrdersFile -Encoding UTF8
 }
 
+function Get-NextOrderId {
+    $orders = @(Read-Orders)
+    $maxSequence = 0
+
+    foreach ($order in $orders) {
+        $orderId = [string]$order["orderId"]
+        if ($orderId -match '^A-(\d+)$') {
+            $sequence = [int]$Matches[1]
+            if ($sequence -gt $maxSequence) {
+                $maxSequence = $sequence
+            }
+        }
+    }
+
+    return "A-$($maxSequence + 1)"
+}
+
 function Get-ContentType {
     param(
         [Parameter(Mandatory = $true)]
@@ -161,6 +178,10 @@ function Get-ContentType {
         ".css" { return "text/css" }
         ".js" { return "application/javascript" }
         ".json" { return "application/json" }
+        ".jpg" { return "image/jpeg" }
+        ".jpeg" { return "image/jpeg" }
+        ".png" { return "image/png" }
+        ".webp" { return "image/webp" }
         default { return "text/plain" }
     }
 }
@@ -208,6 +229,34 @@ function Send-Response {
     $stream = $Client.GetStream()
     $stream.Write($responseBytes, 0, $responseBytes.Length)
     $stream.Write($bodyBytes, 0, $bodyBytes.Length)
+    $stream.Flush()
+}
+
+function Send-ByteResponse {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Net.Sockets.TcpClient]$Client,
+
+        [Parameter(Mandatory = $true)]
+        [byte[]]$BodyBytes,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ContentType,
+
+        [int]$StatusCode = 200
+    )
+
+    $headers = @(
+        "HTTP/1.1 $StatusCode $(Get-StatusDescription -StatusCode $StatusCode)",
+        "Content-Type: $ContentType",
+        "Content-Length: $($BodyBytes.Length)",
+        "Connection: close"
+    ) -join "`r`n"
+
+    $responseBytes = [System.Text.Encoding]::UTF8.GetBytes("$headers`r`n`r`n")
+    $stream = $Client.GetStream()
+    $stream.Write($responseBytes, 0, $responseBytes.Length)
+    $stream.Write($BodyBytes, 0, $BodyBytes.Length)
     $stream.Flush()
 }
 
@@ -353,14 +402,15 @@ function Handle-OrdersPost {
 
     $items = @($payload["items"] | Where-Object { [int]$_["quantity"] -gt 0 })
 
-    if (-not $payload["orderId"] -or $items.Count -eq 0) {
-        Send-JsonResponse -Client $Client -Payload @{ error = "El pedido debe incluir un identificador y al menos una bebida." } -StatusCode 400
+    if ($items.Count -eq 0) {
+        Send-JsonResponse -Client $Client -Payload @{ error = "El pedido debe incluir al menos una bebida." } -StatusCode 400
         return
     }
 
     $orders = @(Read-Orders)
+    $nextOrderId = Get-NextOrderId
     $newOrder = [ordered]@{
-        orderId = [string]$payload["orderId"]
+        orderId = $nextOrderId
         createdAt = (Get-Date).ToString("o")
         status = "active"
         completedAt = $null
@@ -469,6 +519,15 @@ function Handle-ApiRequest {
             Send-Response -Client $Client -Body "{""categories"":$categoriesJson}" -ContentType "application/json"
             return
         }
+        "/api/next-order-id" {
+            if ($Request.Method -eq "GET") {
+                Send-JsonResponse -Client $Client -Payload @{ orderId = (Get-NextOrderId) }
+                return
+            }
+
+            Send-JsonResponse -Client $Client -Payload @{ error = "Metodo no permitido." } -StatusCode 405
+            return
+        }
         "/api/orders/complete" {
             if ($Request.Method -eq "POST") {
                 Handle-OrdersCompletePost -Client $Client -Request $Request
@@ -522,8 +581,15 @@ function Handle-StaticRequest {
         return
     }
 
+    $contentType = Get-ContentType -Path $filePath
+    if ($contentType.StartsWith("image/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $content = [System.IO.File]::ReadAllBytes($filePath)
+        Send-ByteResponse -Client $Client -BodyBytes $content -ContentType $contentType
+        return
+    }
+
     $content = Get-Content -LiteralPath $filePath -Raw
-    Send-Response -Client $Client -Body $content -ContentType (Get-ContentType -Path $filePath)
+    Send-Response -Client $Client -Body $content -ContentType $contentType
 }
 
 function Handle-Client {
