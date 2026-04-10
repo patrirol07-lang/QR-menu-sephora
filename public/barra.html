@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barra | Sephora Cafe</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="bar-page">
+  <main class="layout barra-layout">
+    <section class="hero-card compact">
+      <p class="eyebrow">Pantalla de barra</p>
+      <h1>Pedidos en llegada</h1>
+      <p class="hero-copy">
+        Vista para preparacion. Puedes marcar cada pedido como entregado y quedara guardado en el historico.
+      </p>
+
+      <div class="hero-meta">
+        <div class="badge">
+          <span class="badge-label">Activos</span>
+          <strong id="orders-count">0</strong>
+        </div>
+        <div class="badge">
+          <span class="badge-label">Entregados</span>
+          <strong id="completed-count">0</strong>
+        </div>
+        <div class="badge">
+          <span class="badge-label">Ultima actualizacion</span>
+          <strong id="last-updated">--:--:--</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="menu-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Cola activa</p>
+          <h2>Orden de llegada</h2>
+        </div>
+        <button id="refresh-orders" class="secondary-button" type="button">Actualizar</button>
+      </div>
+
+      <div id="orders-root" class="orders-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="menu-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Historico</p>
+          <h2>Completos y entregados</h2>
+        </div>
+      </div>
+
+      <div id="completed-orders-root" class="orders-grid completed-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="/barra.js"></script>
+</body>
+</html>
