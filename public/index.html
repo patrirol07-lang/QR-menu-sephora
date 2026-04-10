@@ -15,6 +15,10 @@
         Selecciona tus bebidas, revisa tu identificador y envia el pedido a barra.
       </p>
 
+      <div class="demo-switcher">
+        <a class="secondary-button button-link" href="/barra">Ver barra</a>
+      </div>
+
       <div class="hero-meta">
         <div class="badge">
           <span class="badge-label">Pedido</span>
@@ -43,7 +47,10 @@
           <p class="submit-caption">Identificador visible para seguimiento</p>
           <strong id="submit-order-id">---</strong>
         </div>
-        <button id="submit-order" class="primary-button" type="button">ENVIAR</button>
+        <div class="sticky-submit-actions">
+          <a class="secondary-button button-link button-link-contrast" href="/barra">Abrir barra</a>
+          <button id="submit-order" class="primary-button" type="button">ENVIAR</button>
+        </div>
       </div>
 
       <p id="status-message" class="status-message" role="status"></p>
