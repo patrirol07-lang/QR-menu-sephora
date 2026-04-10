@@ -12,32 +12,32 @@ const statusMessage = document.getElementById("status-message");
 const submitButton = document.getElementById("submit-order");
 const menuImageMap = {
   "golden-hour-macchiato": {
-    src: "/menu/golden-hour-macchiato.jpg",
-    alt: "Golden Hour Macchiato servido en vaso con espuma cremosa y tonos dorados.",
+    src: "/menu/golden-hour-macchiato.png",
+    alt: "Palette de Chocolatt servido en vaso alto con cafe y leche en capas.",
   },
   "glitter-iced-latte": {
     src: "/menu/glitter-iced-latte.png",
-    alt: "Glitter Iced Latte frio servido en vaso alto con capas de cafe y leche.",
+    alt: "Glitter Iced Latte servido frio con espuma y cafe con leche en capas.",
   },
   "pink-clay-mocha": {
-    src: "/menu/pink-clay-mocha.jpg",
-    alt: "Pink Clay Mocha servido en taza de cristal con nata y topping rosado.",
+    src: "/menu/pink-clay-mocha.png",
+    alt: "Pink Clay Mocha servido en vaso alto con base clara y sirope rojo.",
   },
   "cloud-matcha-latte": {
-    src: "/menu/cloud-matcha-latte.jpeg",
-    alt: "Cloud Matcha Latte servido en vaso con capas de matcha y leche.",
+    src: "/menu/cloud-matcha-latte.png",
+    alt: "Cloud Matcha Latte servido en vaso con capas verdes y violetas.",
   },
   "strawberry-glow-matcha": {
-    src: "/menu/strawberry-glow-matcha.jpg",
-    alt: "Strawberry Glow Matcha con espuma rosa sobre matcha verde servido con hielo.",
+    src: "/menu/strawberry-glow-matcha.png",
+    alt: "Strawberry Glow Matcha servido en vaso con fresas en el fondo y matcha en capas.",
   },
-  "watermelon-spritz": {
-    src: "/menu/watermelon-spritz.jpg",
-    alt: "Watermelon Spritz rojo servido en vaso corto con decoracion de sandia y lima.",
+  "watermelon-serum": {
+    src: "/menu/watermelon-serum.jpg",
+    alt: "Watermelon Serum rojo servido en vaso corto con decoracion de sandia y lima.",
   },
-  "dragon-fruit-serum": {
-    src: "/menu/dragon-fruit-serum.webp",
-    alt: "Dragon Fruit Serum rosa intenso servido con fruta dragon y limon.",
+  "blush-on-the-beach": {
+    src: "/menu/blush-on-the-beach.png",
+    alt: "Sun Kiss Blush servido en vaso alto con tonos melocoton y granada.",
   },
   "sephora-spritz": {
     src: "/menu/sephora-spritz.webp",
@@ -61,6 +61,10 @@ function getTotalSelected() {
 
 function updateSelectedCount() {
   selectedCountLabel.textContent = String(getTotalSelected());
+}
+
+function formatPrice(value) {
+  return `${Number(value).toFixed(2)} €`;
 }
 
 function setStatus(message, tone = "") {
@@ -157,13 +161,22 @@ function renderMenu() {
       const details = document.createElement("div");
       details.className = "item-copy";
 
+      const heading = document.createElement("div");
+      heading.className = "item-heading";
+
       const name = document.createElement("h4");
       name.textContent = item.name;
+
+      const price = document.createElement("strong");
+      price.className = "item-price";
+      price.textContent = formatPrice(item.price);
+
+      heading.append(name, price);
 
       const description = document.createElement("p");
       description.textContent = item.description;
 
-      details.append(name, description);
+      details.append(heading, description);
 
       const controls = document.createElement("div");
       controls.className = "quantity-controls";

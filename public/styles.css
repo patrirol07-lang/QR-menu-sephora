@@ -211,6 +211,19 @@ p {
   gap: 8px;
 }
 
+.item-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.item-price {
+  color: var(--accent-dark);
+  font-size: 0.98rem;
+  white-space: nowrap;
+}
+
 .menu-item {
   align-items: stretch;
 }
@@ -460,6 +473,11 @@ p {
 
   .menu-item-content {
     flex-direction: column;
+  }
+
+  .item-heading {
+    flex-direction: column;
+    gap: 6px;
   }
 
   .menu-item-media {
