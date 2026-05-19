@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opiniones | Shepora Cafe</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="reviews-page">
+  <main class="layout reviews-layout">
+    <section class="hero-card">
+      <p class="eyebrow">Opiniones</p>
+      <h1>Tu opinión nos ayuda a mejorar</h1>
+      <p class="hero-copy">
+        Cuéntanos cómo ha sido tu experiencia en Shepora Café. Cuidamos cada bebida,
+        cada detalle y cada momento.
+      </p>
+
+      <div class="demo-switcher">
+        <a class="secondary-button button-link" href="/">Volver al menu</a>
+        <a class="secondary-button button-link" href="/barra">Ver barra</a>
+      </div>
+    </section>
+
+    <section class="menu-card review-form-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Formulario</p>
+          <h2>Comparte tu experiencia</h2>
+        </div>
+      </div>
+
+      <form id="review-form" class="review-form" novalidate>
+        <div class="review-grid">
+          <label class="field-group">
+            <span class="field-label">Nombre</span>
+            <input id="review-name" name="name" class="field-input" type="text" placeholder="Tu nombre (opcional)">
+          </label>
+
+          <label class="field-group">
+            <span class="field-label">Producto probado</span>
+            <select id="review-product" name="productTried" class="field-input" required>
+              <option value="">Selecciona una opcion</option>
+              <option value="Café">Café</option>
+              <option value="Matcha">Matcha</option>
+              <option value="Smoothie">Smoothie</option>
+              <option value="Cóctel">Cóctel</option>
+              <option value="Postre">Postre</option>
+              <option value="Comida salada">Comida salada</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </label>
+        </div>
+
+        <section class="rating-panel" aria-labelledby="rating-title">
+          <div class="rating-copy">
+            <p id="rating-title" class="field-label">Valoración general</p>
+            <p class="section-note">Selecciona entre 1 y 5 estrellas.</p>
+          </div>
+
+          <div class="rating-selector">
+            <div id="star-rating" class="star-rating" role="radiogroup" aria-label="Valoración de 1 a 5 estrellas">
+              <button type="button" class="star-button" data-rating="1" aria-label="1 estrella" aria-pressed="false">★</button>
+              <button type="button" class="star-button" data-rating="2" aria-label="2 estrellas" aria-pressed="false">★</button>
+              <button type="button" class="star-button" data-rating="3" aria-label="3 estrellas" aria-pressed="false">★</button>
+              <button type="button" class="star-button" data-rating="4" aria-label="4 estrellas" aria-pressed="false">★</button>
+              <button type="button" class="star-button" data-rating="5" aria-label="5 estrellas" aria-pressed="false">★</button>
+            </div>
+
+            <div class="rating-feedback">
+              <span id="rating-emoji" class="rating-emoji" aria-hidden="true">🙂</span>
+              <strong id="rating-label" class="rating-label">Selecciona tu valoración</strong>
+            </div>
+          </div>
+        </section>
+
+        <fieldset class="field-group">
+          <legend class="field-label">¿Volverías?</legend>
+          <div class="choice-row">
+            <label class="choice-pill">
+              <input type="radio" name="wouldReturn" value="Sí">
+              <span>Sí</span>
+            </label>
+            <label class="choice-pill">
+              <input type="radio" name="wouldReturn" value="Tal vez">
+              <span>Tal vez</span>
+            </label>
+            <label class="choice-pill">
+              <input type="radio" name="wouldReturn" value="No">
+              <span>No</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <label class="field-group">
+          <span class="field-label">Tu opinión</span>
+          <textarea
+            id="review-text"
+            name="reviewText"
+            class="field-input field-textarea"
+            rows="5"
+            placeholder="Cuéntanos qué te gustó, qué mejorarías o qué bebida te sorprendió."
+            required
+          ></textarea>
+        </label>
+
+        <label class="consent-card">
+          <input id="review-consent" name="publishConsent" type="checkbox" class="consent-checkbox" required>
+          <span>
+            Acepto que mi opinión pueda ser revisada y usada públicamente por Shepora Café.
+          </span>
+        </label>
+
+        <div class="review-actions">
+          <button id="review-submit" class="primary-button" type="submit">Enviar opinión</button>
+        </div>
+
+        <p id="review-message" class="status-message" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="/reviews.js"></script>
+</body>
+</html>

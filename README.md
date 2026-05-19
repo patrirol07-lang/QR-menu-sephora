@@ -1,141 +1,71 @@
-# Sephora Cafe QR Menu MVP
+# Shepora Cafe - Carta digital demo
 
-Carta digital con dos vistas:
+Demo interactiva de carta digital para Shepora Cafe.
 
-- Cliente: ` / `
-- Barra: ` /barra `
+Incluye:
+- Vista cliente para seleccionar bebidas y enviar pedidos
+- Vista barra para ver pedidos en orden de llegada y marcarlos como entregados
+- Pagina de opiniones para valorar la experiencia con estrellas y comentario
 
-El backend principal ahora es Node.js + Express, compatible con Linux, Codespaces y Render. Ya no depende de PowerShell para arrancar.
-
-## Estructura
-
-- `server.js`: servidor principal compatible con Linux/Render.
-- `package.json`: dependencias y comandos de arranque.
-- `public/`: frontend y assets estaticos.
-- `data/orders.json`: persistencia simple de pedidos.
-
-## Requisitos
-
-- Node.js 18 o superior
-- npm
-
-## Arranque local
-
-### Windows
-
-```bash
-npm install
-npm start
-```
-
-### Linux
-
-```bash
-npm install
-npm start
-```
-
-### Codespaces
-
-```bash
-npm install
-npm start
-```
-
-La aplicacion arranca en:
-
-- Cliente: `http://localhost:8080/`
-- Barra: `http://localhost:8080/barra`
-
-Si defines `PORT`, el servidor usara ese valor:
-
-```bash
-PORT=3000 npm start
-```
-
-En PowerShell:
-
-```powershell
-$env:PORT=3000
-npm start
-```
-
-## Rutas
-
-- `GET /`: vista cliente
-- `GET /barra`: vista de barra
-- `GET /api/menu`: menu inicial
-- `GET /api/next-order-id`: siguiente identificador corto tipo `A-1`
-- `GET /api/orders`: lista de pedidos
-- `POST /api/orders`: crea un pedido
-- `POST /api/orders/complete`: marca un pedido como entregado
-
-## Persistencia
-
-Los pedidos se guardan en `data/orders.json`.
-
-No hace falta base de datos para el MVP, pero hay una limitacion importante en despliegue:
-
-- En Render, el sistema de archivos puede ser efimero.
-- Si reinicias o redespliegas el servicio, `data/orders.json` puede perderse.
-- Para una demo sencilla puede ser suficiente.
-- Si quieres persistencia real en Render, debes usar un Persistent Disk o una base de datos.
-
-## Despliegue en Render
-
-Tipo de servicio:
-
-- `Web Service`
-
-Entorno:
-
-- `Node`
-
-Build Command:
+## Instalacion
 
 ```bash
 npm install
 ```
 
-Start Command:
+## Ejecucion
 
 ```bash
 npm start
 ```
 
-Root Directory:
+La app arranca por defecto en `http://localhost:8080`.
 
-- dejar vacio si el repo esta desplegado desde su raiz
+## Rutas disponibles
 
-Variables de entorno:
+- `/` - vista cliente
+- `/barra` - vista barra
+- `/opiniones` - pagina de opiniones
 
-- no son obligatorias
-- Render inyecta `PORT` automaticamente
+## Como probar el flujo cliente
 
-## Flujo de prueba
+1. Entra en `/`.
+2. Elige una o varias bebidas y ajusta cantidades.
+3. Pulsa `ENVIAR`.
+4. Comprueba el mensaje de confirmacion del pedido.
+5. Si quieres, usa el CTA de opiniones que aparece tras enviar el pedido.
 
-### Cliente
+## Como probar la barra
 
-1. Entra en ` / `
-2. Selecciona cantidades
-3. Verifica el identificador visible
-4. Pulsa `ENVIAR`
+1. Entra en `/barra`.
+2. Comprueba que los pedidos nuevos aparecen en pedidos activos.
+3. Pulsa el boton para marcar un pedido como entregado.
+4. Verifica que pasa a la seccion de completados y entregados.
 
-### Barra
+## Como probar opiniones
 
-1. Abre ` /barra `
-2. Observa pedidos activos en orden de llegada
-3. Pulsa `Marcar como entregado`
-4. Comprueba que pasa a `Completos y entregados`
+1. Entra en `/opiniones`.
+2. Selecciona una valoracion con estrellas.
+3. Elige el producto probado.
+4. Escribe una opinion.
+5. Marca el consentimiento.
+6. Pulsa `Enviar opinion`.
+7. Comprueba que la opinion queda guardada en [data/reviews.json](C:\Users\xxgab\OneDrive\Documentos\GitHub\QR-menu-sephora\data\reviews.json) con `status: "pending"`.
 
-## Notas de migracion
+## Limitaciones actuales
 
-- `server.ps1` ha sido eliminado como via principal para evitar la dependencia de PowerShell.
-- El flujo operativo ahora es estandar: `npm install` + `npm start`.
-- El frontend visual no se ha refactorizado de mas; se ha conservado el producto actual.
+- [data/orders.json](C:\Users\xxgab\OneDrive\Documentos\GitHub\QR-menu-sephora\data\orders.json) y [data/reviews.json](C:\Users\xxgab\OneDrive\Documentos\GitHub\QR-menu-sephora\data\reviews.json) sirven para demo y entorno local.
+- En Render o produccion la persistencia en JSON puede no mantenerse entre reinicios o despliegues.
+- Las opiniones no se publican automaticamente.
+- Falta un panel o flujo de moderacion para aprobar o rechazar reseñas.
+- Para una version real conviene mover pedidos y opiniones a Google Sheets, Airtable o una base de datos.
 
-## Limitaciones abiertas
+## Como enseñarlo como demo
 
-- La persistencia sigue siendo un archivo JSON local.
-- No hay autenticacion ni panel admin.
-- No hay base de datos ni almacenamiento persistente gestionado.
+1. Abre `/`.
+2. Haz un pedido desde la vista cliente.
+3. Abre `/barra` y enseña que el pedido aparece.
+4. Marca el pedido como entregado.
+5. Abre `/opiniones`.
+6. Envia una opinion con estrellas y comentario.
+

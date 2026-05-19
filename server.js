@@ -8,6 +8,7 @@ const PROJECT_ROOT = __dirname;
 const PUBLIC_DIR = path.join(PROJECT_ROOT, "public");
 const DATA_DIR = path.join(PROJECT_ROOT, "data");
 const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
+const REVIEWS_FILE = path.join(DATA_DIR, "reviews.json");
 
 const MENU = [
   {
@@ -93,6 +94,10 @@ function ensureProjectFiles() {
   if (!fs.existsSync(ORDERS_FILE)) {
     fs.writeFileSync(ORDERS_FILE, "[]\n", "utf8");
   }
+
+  if (!fs.existsSync(REVIEWS_FILE)) {
+    fs.writeFileSync(REVIEWS_FILE, "[]\n", "utf8");
+  }
 }
 
 function normalizeItem(item = {}) {
@@ -119,6 +124,23 @@ function normalizeOrder(order = {}) {
   };
 }
 
+function normalizeReview(review = {}) {
+  return {
+    id: String(review.id ?? ""),
+    name: String(review.name ?? ""),
+    rating: Number.parseInt(review.rating, 10) || 0,
+    reviewText: String(review.reviewText ?? ""),
+    productTried: String(review.productTried ?? ""),
+    wouldReturn: String(review.wouldReturn ?? ""),
+    publishConsent: Boolean(review.publishConsent),
+    status:
+      typeof review.status === "string" && review.status.trim().length > 0
+        ? review.status
+        : "pending",
+    createdAt: String(review.createdAt ?? ""),
+  };
+}
+
 function readOrders() {
   ensureProjectFiles();
 
@@ -134,6 +156,23 @@ function readOrders() {
 
 function writeOrders(orders) {
   fs.writeFileSync(ORDERS_FILE, `${JSON.stringify(orders, null, 2)}\n`, "utf8");
+}
+
+function readReviews() {
+  ensureProjectFiles();
+
+  const raw = fs.readFileSync(REVIEWS_FILE, "utf8").trim();
+  if (!raw) {
+    return [];
+  }
+
+  const parsed = JSON.parse(raw);
+  const reviews = Array.isArray(parsed) ? parsed : [parsed];
+  return reviews.map(normalizeReview);
+}
+
+function writeReviews(reviews) {
+  fs.writeFileSync(REVIEWS_FILE, `${JSON.stringify(reviews, null, 2)}\n`, "utf8");
 }
 
 function getNextOrderId(orders) {
@@ -152,6 +191,24 @@ function getNextOrderId(orders) {
   }
 
   return `A-${maxSequence + 1}`;
+}
+
+function getNextReviewId(reviews) {
+  let maxSequence = 0;
+
+  for (const review of reviews) {
+    const match = String(review.id).match(/^R-(\d+)$/);
+    if (!match) {
+      continue;
+    }
+
+    const sequence = Number.parseInt(match[1], 10);
+    if (sequence > maxSequence) {
+      maxSequence = sequence;
+    }
+  }
+
+  return `R-${maxSequence + 1}`;
 }
 
 function buildNewOrder(body) {
@@ -202,6 +259,59 @@ function completeOrder(orderId) {
   return order;
 }
 
+function buildNewReview(body) {
+  const rating = Number.parseInt(body.rating, 10) || 0;
+  const reviewText = typeof body.reviewText === "string" ? body.reviewText.trim() : "";
+  const productTried =
+    typeof body.productTried === "string" ? body.productTried.trim() : "";
+  const publishConsent = Boolean(body.publishConsent);
+  const wouldReturn =
+    typeof body.wouldReturn === "string" ? body.wouldReturn.trim() : "";
+
+  if (rating < 1 || rating > 5) {
+    const error = new Error("Selecciona una valoración entre 1 y 5 estrellas.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!productTried) {
+    const error = new Error("Selecciona qué producto o servicio has probado.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!reviewText) {
+    const error = new Error("Escribe una opinión antes de enviarla.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!publishConsent) {
+    const error = new Error(
+      "Debes aceptar que tu opinión pueda ser revisada y usada públicamente."
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const reviews = readReviews();
+  const review = {
+    id: getNextReviewId(reviews),
+    name: typeof body.name === "string" ? body.name.trim() : "",
+    rating,
+    reviewText,
+    productTried,
+    wouldReturn,
+    publishConsent: true,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  reviews.push(review);
+  writeReviews(reviews);
+  return review;
+}
+
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(PUBLIC_DIR));
@@ -212,6 +322,10 @@ app.get("/", (_request, response) => {
 
 app.get("/barra", (_request, response) => {
   response.sendFile(path.join(PUBLIC_DIR, "barra.html"));
+});
+
+app.get("/opiniones", (_request, response) => {
+  response.sendFile(path.join(PUBLIC_DIR, "opiniones.html"));
 });
 
 app.get("/api/menu", (_request, response) => {
@@ -230,6 +344,16 @@ app.get("/api/orders", (_request, response) => {
   response.json({ orders });
 });
 
+app.get("/api/reviews", (_request, response) => {
+  const reviews = readReviews()
+    .filter((review) => review.status === "approved")
+    .sort((left, right) => {
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    });
+
+  response.json({ reviews });
+});
+
 app.post("/api/orders", (request, response, next) => {
   try {
     const order = buildNewOrder(request.body ?? {});
@@ -243,6 +367,15 @@ app.post("/api/orders/complete", (request, response, next) => {
   try {
     const order = completeOrder(request.body?.orderId);
     response.json({ success: true, order });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/reviews", (request, response, next) => {
+  try {
+    const review = buildNewReview(request.body ?? {});
+    response.status(201).json({ success: true, review });
   } catch (error) {
     next(error);
   }

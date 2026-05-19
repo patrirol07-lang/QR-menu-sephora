@@ -9,6 +9,7 @@ const orderIdLabel = document.getElementById("order-id");
 const submitOrderIdLabel = document.getElementById("submit-order-id");
 const selectedCountLabel = document.getElementById("selected-count");
 const statusMessage = document.getElementById("status-message");
+const reviewPrompt = document.getElementById("review-prompt");
 const submitButton = document.getElementById("submit-order");
 const menuImageMap = {
   "golden-hour-macchiato": {
@@ -70,6 +71,14 @@ function formatPrice(value) {
 function setStatus(message, tone = "") {
   statusMessage.textContent = message;
   statusMessage.className = `status-message ${tone}`.trim();
+}
+
+function setReviewPromptVisible(isVisible) {
+  if (!reviewPrompt) {
+    return;
+  }
+
+  reviewPrompt.classList.toggle("hidden-section", !isVisible);
 }
 
 function changeQuantity(itemId, nextQuantity) {
@@ -288,6 +297,7 @@ async function submitOrder() {
     renderMenu();
     updateSelectedCount();
     await loadNextOrderId();
+    setReviewPromptVisible(true);
   } catch (error) {
     setStatus(error.message, "warning");
   } finally {
