@@ -17,7 +17,7 @@ const MENU = [
       {
         id: "golden-hour-macchiato",
         name: "Palette de Chocolatt",
-        description: "Cafe con leche, curcuma y un toque de canela.",
+        description: "Cafe tres pisos con sirope de chocolate y espuma de leche",
         price: 4.79,
       },
       {
